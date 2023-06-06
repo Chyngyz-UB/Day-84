@@ -1,0 +1,75 @@
+# Import the necessary modules
+import tkinter as tk  # Import the tkinter module and alias it as tk
+from PIL import Image, ImageDraw, ImageFont  # Import specific classes from the PIL module
+from tkinter import filedialog, messagebox  # Import specific functions from the tkinter module
+
+
+# Define a class for the image watermarking application
+class ImageWatermarkingApp:
+    def __init__(self):
+        # Create a root window for the application
+        self.root = tk.Tk()
+        self.root.title("Image Watermarking Program")  # Set the title of the window
+        self.image = None  # Initialize the image variable to hold the selected image
+
+        # Create the GUI widgets
+        self.create_widgets()
+
+    def create_widgets(self):
+        # Create buttons for browsing an image, adding a watermark, and saving the image
+        self.browse_button = tk.Button(self.root, text="Browse Image", command=self.browse_image)
+        self.watermark_button = tk.Button(self.root, text="Add Watermark", command=self.add_watermark)
+        self.save_button = tk.Button(self.root, text="Save Image", command=self.save_image)
+
+        # Pack the buttons in the root window
+        self.browse_button.pack()
+        self.watermark_button.pack()
+        self.save_button.pack()
+
+    def browse_image(self):
+        # Open a file dialog for the user to select an image file
+        file_path = filedialog.askopenfilename()
+        self.image = Image.open(file_path)                      # Open the selected image file
+
+    def add_watermark(self):
+        if self.image:
+            # Ask the user to enter the text for the watermark
+            watermark_text = tk.simpledialog.askstring("Watermark Text", "Enter the text for the watermark:")
+
+            if watermark_text:
+                width, height = self.image.size
+                # Create a new image with transparency for the watermark
+                watermark = Image.new('RGBA', (width, height), (0, 0, 0, 0))
+                draw = ImageDraw.Draw(watermark)                # Create a drawing object for the watermark
+                font = ImageFont.truetype("arial.ttf", 40)      # Load the desired font
+                text_width, text_height = draw.textsize(watermark_text, font=font)  # Get the size of the watermark text
+                x = width - text_width - 10                     # Calculate the x-coordinate for the watermark
+                y = height - text_height - 10                   # Calculate the y-coordinate for the watermark
+                draw.text((x, y), watermark_text, font=font,
+                          fill=(255, 255, 255, 128))            # Draw the watermark text on the image
+
+                # Overlay the watermark on the original image
+                watermarked_image = Image.alpha_composite(self.image.convert("RGBA"), watermark)
+                watermarked_image.show()                        # Display the watermarked image
+
+                self.image = watermarked_image                  # Update the image variable with the watermarked image
+
+    def save_image(self):
+        if self.image:
+            # Open a file dialog for the user to choose a save location and specify the file format
+            save_path = filedialog.asksaveasfilename(defaultextension=".png")
+            if save_path:
+                self.image.save(save_path)  # Save the watermarked image to the specified file path
+                messagebox.showinfo("Image Saved",
+                                    "The watermarked image has been saved successfully.")  # Show message in a box
+
+    def run(self):
+        self.root.mainloop()                                    # Start the main event loop of the application
+
+
+# Create an instance of the ImageWatermarkingApp class
+app = ImageWatermarkingApp()
+app.run()
+
+# Run the application
+app.run()
